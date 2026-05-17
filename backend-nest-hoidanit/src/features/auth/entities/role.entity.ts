@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('roles')
 export class Role {
@@ -8,7 +9,6 @@ export class Role {
   @Column({ type: 'varchar', length: 50, unique: true })
   name: string;
 
-  // Will be populated when User entity is added
-  // @OneToMany(() => User, (user) => user.role)
-  // users: User[];
+  @OneToMany(() => User, (user) => user.role)
+  users: User[];
 }

@@ -22,6 +22,15 @@ export class UserRepository {
     return this.repo.findOneBy({ email });
   }
 
+  findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
   save(user: Partial<User>): Promise<User> {
     return this.repo.save(user);
   }

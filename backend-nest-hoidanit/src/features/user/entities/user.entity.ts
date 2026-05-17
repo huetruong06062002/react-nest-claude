@@ -31,7 +31,7 @@ export class User {
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
-  @ManyToOne(() => Role, { nullable: true, eager: true })
+  @ManyToOne(() => Role, (role) => role.users, { nullable: true, eager: true })
   role: Role | null;
 
   @CreateDateColumn()

@@ -7,18 +7,24 @@ import {
   Shield,
   ArrowLeft,
   Store,
+  LogOut,
 } from 'lucide-react';
 import { ROUTES } from '../routes/routes';
+import { useAuthStore } from '@/features/auth';
+import { useLogout } from '@/features/auth';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/admin' },
   { label: 'Products', icon: Package, to: ROUTES.ADMIN_PRODUCTS },
   { label: 'Orders', icon: ShoppingCart, to: ROUTES.ADMIN_ORDERS },
-  { label: 'Users', icon: Users, to: '/admin/users' },
+  { label: 'Users', icon: Users, to: ROUTES.ADMIN_USERS },
   { label: 'Roles', icon: Shield, to: ROUTES.ADMIN_ROLES },
 ];
 
 export const AdminLayout = () => {
+  const user = useAuthStore((s) => s.user);
+  const { mutate: logout, isPending } = useLogout();
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
@@ -59,7 +65,7 @@ export const AdminLayout = () => {
         </nav>
 
         {/* Footer */}
-        <div className="px-3 pb-4 border-t border-white/10 pt-4">
+        <div className="px-3 pb-4 border-t border-white/10 pt-4 space-y-1">
           <NavLink
             to={ROUTES.HOME}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
@@ -67,16 +73,27 @@ export const AdminLayout = () => {
             <ArrowLeft size={16} />
             Back to Store
           </NavLink>
+          <button
+            onClick={() => logout()}
+            disabled={isPending}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-40"
+          >
+            <LogOut size={16} />
+            {isPending ? 'Signing out…' : 'Sign out'}
+          </button>
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center px-6 shrink-0">
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
           <p className="text-sm text-gray-500">
-            Welcome back, <span className="font-medium text-gray-800">Admin</span>
+            Welcome back, <span className="font-medium text-gray-800">{user?.name ?? 'Admin'}</span>
           </p>
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            {user?.email}
+          </span>
         </header>
 
         {/* Content */}

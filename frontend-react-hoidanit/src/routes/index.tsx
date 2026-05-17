@@ -6,6 +6,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
 import { RolesPage } from '@/features/roles';
 import { UsersPage } from '@/features/users';
+import { LoginPage, RegisterPage } from '@/features/auth';
 
 export const router = createBrowserRouter([
   // Public routes with main layout
@@ -22,8 +23,8 @@ export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
     children: [
-      { path: '/login', element: <div>Login (coming soon)</div> },
-      { path: '/register', element: <div>Register (coming soon)</div> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
     ],
   },
   // Protected user routes

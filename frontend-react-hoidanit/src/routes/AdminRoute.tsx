@@ -1,9 +1,10 @@
 import { Navigate, Outlet } from 'react-router';
 import { ROUTES } from './routes';
+import { useAuthStore } from '@/features/auth';
 
 export const AdminRoute = () => {
-  // Replace with useAuthStore() role check once auth feature is built
-  const isAdmin = true;
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   if (!isAdmin) {
     return <Navigate to={ROUTES.HOME} replace />;
