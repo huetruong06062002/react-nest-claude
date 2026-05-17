@@ -15,9 +15,13 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
-  app.enableCors();
-
   const config = app.get(ConfigService);
+
+  app.enableCors({
+    origin: config.get<string>('app.corsOrigin') ?? 'http://localhost:5173',
+    credentials: true,
+  });
+
   const port = config.get<number>('app.port') ?? 3000;
 
   await app.listen(port);
