@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './core/database/database.module';
+import { AuthModule } from './features/auth/auth.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
@@ -15,7 +16,7 @@ import jwtConfig from './config/jwt.config';
       envFilePath: '.env',
     }),
     DatabaseModule,
-    // Feature modules will be added here as they are created
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

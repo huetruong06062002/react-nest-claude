@@ -4,6 +4,7 @@ import { AuthLayout } from '@/layouts/AuthLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
+import { RolesPage } from '@/features/roles';
 
 export const router = createBrowserRouter([
   // Public routes with main layout
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'products', element: <div>Admin Products (coming soon)</div> },
           { path: 'orders', element: <div>Admin Orders (coming soon)</div> },
+          { path: 'roles', element: <RolesPage /> },
         ],
       },
     ],
