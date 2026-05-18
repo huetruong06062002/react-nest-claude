@@ -2,10 +2,7 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
-}
-
-export interface ApiListResponse<T> extends ApiResponse<T[]> {
-  meta: PaginationMeta;
+  meta?: PaginationMeta;
 }
 
 export interface PaginationMeta {
@@ -13,13 +10,4 @@ export interface PaginationMeta {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-export interface ApiErrorResponse {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
-  };
 }

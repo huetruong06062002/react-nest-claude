@@ -2,20 +2,27 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
+import { User } from './user.entity';
 
 @Entity('refresh_tokens')
+@Index('idx_refresh_tokens_token_hash', ['tokenHash'])
+@Index('idx_refresh_tokens_user_id', ['userId'])
+@Index('idx_refresh_tokens_expires_at', ['expiresAt'])
 export class RefreshToken {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { eager: false })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ name: 'user_id', type: 'bigint' })
+  userId: number;
 
   @Column({ name: 'token_hash', type: 'varchar', length: 255, unique: true })
   tokenHash: string;

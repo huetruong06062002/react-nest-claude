@@ -10,23 +10,23 @@ import { globalValidationPipe } from './shared/pipes/validation.pipe';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const config = app.get(ConfigService);
+  const port = config.get<number>('app.port') ?? 3000;
+  const apiPrefix = config.get<string>('app.apiPrefix') ?? 'api/v1';
+
+  app.setGlobalPrefix(apiPrefix);
   app.use(cookieParser());
-  app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(globalValidationPipe);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
-  const config = app.get(ConfigService);
-
   app.enableCors({
-    origin: config.get<string>('app.corsOrigin') ?? 'http://localhost:5173',
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
     credentials: true,
   });
 
-  const port = config.get<number>('app.port') ?? 3000;
-
   await app.listen(port);
-  console.log(`Application running on http://localhost:${port}/api/v1`);
+  console.log(`Application running on: http://localhost:${port}/${apiPrefix}`);
 }
 bootstrap();

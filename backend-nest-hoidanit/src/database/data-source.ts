@@ -1,6 +1,7 @@
-import 'reflect-metadata';
+import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
-import * as path from 'path';
+
+dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -9,6 +10,8 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME ?? 'root',
   password: process.env.DB_PASSWORD ?? '',
   database: process.env.DB_NAME ?? 'hoidanit_ecommerce',
-  entities: [path.join(__dirname, '../**/*.entity{.ts,.js}')],
+  entities: [__dirname + '/../features/**/*.entity{.ts,.js}'],
   synchronize: false,
+  logging: false,
+  charset: 'utf8mb4',
 });

@@ -1,17 +1,17 @@
 import { Outlet } from 'react-router';
+import { Navbar } from '@/shared/components/Navbar';
+import { Footer } from '@/shared/components/Footer';
 
 export const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="h-16 border-b flex items-center px-6">
-        <span className="font-bold text-lg">hoidanit-ecommerce</span>
-      </header>
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      <Navbar />
+
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="h-12 border-t flex items-center justify-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} hoidanit-ecommerce
-      </footer>
+
+      <Footer />
     </div>
   );
 };

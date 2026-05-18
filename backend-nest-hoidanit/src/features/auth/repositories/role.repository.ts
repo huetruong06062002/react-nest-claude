@@ -15,11 +15,11 @@ export class RoleRepository {
   }
 
   findById(id: number): Promise<Role | null> {
-    return this.repo.findOneBy({ id });
+    return this.repo.findOne({ where: { id } });
   }
 
   findByName(name: string): Promise<Role | null> {
-    return this.repo.findOneBy({ name });
+    return this.repo.findOne({ where: { name } });
   }
 
   save(role: Partial<Role>): Promise<Role> {

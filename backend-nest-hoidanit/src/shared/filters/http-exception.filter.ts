@@ -17,6 +17,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    console.log(exception)
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -27,16 +28,25 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.message
         : 'Internal server error';
 
-    const code = status === 500 ? 'SYS_001' : 'SYS_002';
+    const errorResponse =
+      exception instanceof HttpException ? exception.getResponse() : null;
 
-    this.logger.error(`${request.method} ${request.url} → ${status}: ${message}`);
+    this.logger.error(
+      `${request.method} ${request.url} - ${status}: ${message}`,
+    );
 
     response.status(status).json({
       success: false,
       error: {
-        code,
-        message,
-        details: {},
+        code: status === 500 ? 'SYS_001' : 'SYS_002',
+        message:
+          typeof errorResponse === 'object' && errorResponse !== null
+            ? (errorResponse as any).message ?? message
+            : message,
+        details:
+          typeof errorResponse === 'object' && errorResponse !== null
+            ? errorResponse
+            : {},
       },
     });
   }

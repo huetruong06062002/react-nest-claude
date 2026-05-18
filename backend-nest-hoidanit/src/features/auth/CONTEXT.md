@@ -1,22 +1,25 @@
 # Auth Feature
 
-## Scope
-Handles authentication, authorization, and role management.
+## Owns
+- `roles` table
+- `users` table
+- `refresh_tokens` table
 
-## Entities
-- `Role` — maps to `roles` table (id, name)
-- `User` — (coming later)
-- `RefreshToken` — (coming later)
+## Responsibilities
+- User registration & login
+- JWT access token + refresh token flow
+- Role-based access control (customer / admin)
+- Password hashing with bcrypt
+- Multi-device session management via refresh_tokens
 
-## Endpoints
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /api/v1/admin/roles | List all roles |
-| GET | /api/v1/admin/roles/:id | Get role by ID |
-| POST | /api/v1/admin/roles | Create role |
-| PATCH | /api/v1/admin/roles/:id | Update role |
-| DELETE | /api/v1/admin/roles/:id | Delete role |
+## Key Rules
+- Never store plain passwords — always bcrypt hash
+- Refresh token stored as hash in DB (never plain)
+- Access token: 15m | Refresh token: 7d (httpOnly cookie)
 
-## Notes
-- Role names must be unique
-- Default roles: `admin`, `customer`
+## Error Codes
+- AUTH_001: Invalid credentials
+- AUTH_002: Token expired
+- AUTH_003: Token invalid
+- AUTH_004: Insufficient permissions
+- AUTH_005: Email already exists

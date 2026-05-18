@@ -1,6 +1,16 @@
-export class PaginationQueryDto {
-  page?: number = 1;
-  limit?: number = 10;
+export interface PaginationQuery {
+  page?: number;
+  limit?: number;
   sort?: string;
-  order?: 'asc' | 'desc' = 'desc';
+  order?: 'asc' | 'desc';
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }

@@ -1,5 +1,4 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
 
 @Entity('roles')
 export class Role {
@@ -9,6 +8,7 @@ export class Role {
   @Column({ type: 'varchar', length: 50, unique: true })
   name: string;
 
-  @OneToMany(() => User, (user) => user.role)
-  users: User[];
+  // Lazy relation — users loaded only when needed
+  @OneToMany('User', 'role')
+  users: Promise<unknown[]>;
 }

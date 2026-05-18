@@ -10,35 +10,22 @@ export class RefreshTokenRepository {
     private readonly repo: Repository<RefreshToken>,
   ) {}
 
-  save(token: Partial<RefreshToken>): Promise<RefreshToken> {
-    return this.repo.save(token);
-  }
-
   findByTokenHash(tokenHash: string): Promise<RefreshToken | null> {
     return this.repo.findOne({
-      where: { tokenHash },
+      where: { tokenHash, isRevoked: false },
       relations: ['user', 'user.role'],
     });
   }
 
-  async revokeByTokenHash(tokenHash: string): Promise<void> {
+  create(data: Partial<RefreshToken>): Promise<RefreshToken> {
+    return this.repo.save(data);
+  }
+
+  async revoke(tokenHash: string): Promise<void> {
     await this.repo.update({ tokenHash }, { isRevoked: true });
   }
 
-  async revokeAllByUserId(userId: number): Promise<void> {
-    await this.repo
-      .createQueryBuilder()
-      .update()
-      .set({ isRevoked: true })
-      .where('user_id = :userId', { userId })
-      .execute();
-  }
-
-  async deleteExpiredTokens(): Promise<void> {
-    await this.repo
-      .createQueryBuilder()
-      .delete()
-      .where('expires_at < NOW()')
-      .execute();
+  async revokeAllForUser(userId: number): Promise<void> {
+    await this.repo.update({ userId }, { isRevoked: true });
   }
 }

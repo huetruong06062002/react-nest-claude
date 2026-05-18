@@ -4,15 +4,22 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  meta: PaginationMeta;
+// Actual backend response body for paginated endpoints:
+// TransformInterceptor wraps paginate() result → { success, data: { data: T[], meta } }
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: PaginatedData<T>;
 }
 
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+// The unwrapped paginated payload (what hooks return after r.data.data)
+export interface PaginatedData<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface ApiError {
@@ -22,11 +29,4 @@ export interface ApiError {
     message: string;
     details?: Record<string, unknown>;
   };
-}
-
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
 }

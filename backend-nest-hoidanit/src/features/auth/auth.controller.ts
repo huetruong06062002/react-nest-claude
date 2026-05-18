@@ -8,115 +8,116 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { Public } from '../../shared/decorators/public.decorator';
-import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
-import { User } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { User } from './entities/user.entity';
 
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: '/',
-};
+const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Controller('auth')
-@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Public()
   @Post('register')
-  @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto) {
     const user = await this.authService.register(dto);
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
-      role: user.role?.name ?? 'customer',
+      fullName: user.fullName,
+      role: 'customer',
     };
   }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.login(dto, {
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken, user } = await this.authService.login(dto, {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
-    res.cookie(REFRESH_TOKEN_COOKIE, result.refreshToken, COOKIE_OPTIONS);
+    res.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: COOKIE_MAX_AGE_MS,
+    });
 
     return {
-      accessToken: result.accessToken,
-      user: result.user,
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role?.name,
+      },
     };
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
-    if (!token) {
-      res.status(HttpStatus.UNAUTHORIZED).json({ message: 'No refresh token' });
-      return;
+  async refresh(@Req() req: Request) {
+    const rawRefreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
+    if (!rawRefreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
     }
-
-    const result = await this.authService.refresh(token, {
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
-
-    res.cookie(REFRESH_TOKEN_COOKIE, result.refreshToken, COOKIE_OPTIONS);
-
-    return {
-      accessToken: result.accessToken,
-      user: result.user,
-    };
+    return this.authService.refresh(rawRefreshToken);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
-    if (token) {
-      await this.authService.logout(token);
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawRefreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
+    if (rawRefreshToken) {
+      await this.authService.logout(rawRefreshToken);
     }
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+    res.clearCookie(REFRESH_TOKEN_COOKIE);
   }
 
   @Get('me')
-  async getMe(@CurrentUser() user: User) {
-    const me = await this.authService.getMe(user.id);
+  me(@CurrentUser() user: User) {
     return {
-      id: me.id,
-      email: me.email,
-      name: me.name,
-      role: me.role?.name ?? 'customer',
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      phone: user.phone,
+      role: user.role?.name,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
     };
   }
 
   @Patch('me')
-  async updateProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto) {
+  async updateProfile(
+    @CurrentUser() user: User,
+    @Body() dto: UpdateProfileDto,
+  ) {
     const updated = await this.authService.updateProfile(user.id, dto);
     return {
       id: updated.id,
       email: updated.email,
-      name: updated.name,
-      role: updated.role?.name ?? 'customer',
+      fullName: updated.fullName,
+      phone: updated.phone,
     };
   }
 
